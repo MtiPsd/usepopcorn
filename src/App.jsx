@@ -83,6 +83,8 @@ export default function App() {
   }
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchMovies() {
       try {
         setIsLoading(true);
@@ -90,6 +92,9 @@ export default function App() {
 
         const res = await fetch(
           `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+          {
+            signal: controller.signal,
+          },
         );
 
         if (!res.ok) {
@@ -103,9 +108,12 @@ export default function App() {
         }
 
         setMovies(data.Search);
+        setError('');
       } catch (err) {
         console.error(err);
-        setError(err.message);
+        if (err.name !== 'AbortError') {
+          setError(err.message);
+        }
       } finally {
         // not related to error
         setIsLoading(false);
@@ -119,6 +127,10 @@ export default function App() {
     }
 
     fetchMovies();
+
+    return () => {
+      controller.abort();
+    };
   }, [query]);
 
   return (
