@@ -110,7 +110,6 @@ export default function App() {
         setMovies(data.Search);
         setError('');
       } catch (err) {
-        console.error(err);
         if (err.name !== 'AbortError') {
           setError(err.message);
         }
@@ -126,6 +125,7 @@ export default function App() {
       return;
     }
 
+    handleCloseMovie();
     fetchMovies();
 
     return () => {
@@ -203,6 +203,19 @@ function MovieDetails({
     Director: director,
     Genre: genre,
   } = movie;
+
+  useEffect(() => {
+    function callback(e) {
+      if (e.code === 'Escape') {
+        onCloseMovie();
+      }
+    }
+    document.addEventListener('keydown', callback);
+
+    return () => {
+      document.removeEventListener('keydown', callback);
+    };
+  }, [onCloseMovie]);
 
   useEffect(() => {
     async function getMovieDetails() {
