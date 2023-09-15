@@ -174,13 +174,14 @@ function MovieDetails({
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState(null);
 
+  const countRef = useRef(0);
+
   const isWatched = watched.some(
     movie => movie.imdbID === selectedId,
   );
   const watchedUserRating = watched.find(
     movie => movie.imdbID === selectedId,
   )?.userRating;
-
   const {
     Title: title,
     Year: year,
@@ -202,6 +203,14 @@ function MovieDetails({
   // if (imdbRating > 8) {
   //   return <p>Such good movie</p>;
   // }
+
+  // * Whenever the [userRating] value changes
+  // * we want to do something
+  useEffect(() => {
+    if (userRating) {
+      countRef.current += 1;
+    }
+  }, [userRating]);
 
   useEffect(() => {
     function callback(e) {
@@ -241,7 +250,10 @@ function MovieDetails({
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(' ')[0]),
       userRating,
+      countRatingDecisions: countRef.current,
     };
+
+    console.table(newWatchedMovie);
 
     onAddWatched(newWatchedMovie);
     onCloseMovie();
