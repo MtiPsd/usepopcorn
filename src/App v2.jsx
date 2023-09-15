@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import StarRating from './StarRating';
 
 const tempWatchedData = [
@@ -357,8 +357,32 @@ function Logo() {
 }
 
 function Search({ query, setQuery }) {
+  // in you are referring to a DOM element
+  // the default value is usually null
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    function callback(e) {
+      //
+      if (document.activeElement === inputRef.current) {
+        return;
+      }
+
+      if (e.code === 'Enter') {
+        inputRef.current.focus();
+        setQuery('');
+      }
+    }
+    document.addEventListener('keydown', callback);
+
+    return () => {
+      document.removeEventListener('keydown', callback);
+    };
+  }, [setQuery]);
+
   return (
     <input
+      ref={inputRef}
       className='search'
       type='text'
       placeholder='Search movies...'
