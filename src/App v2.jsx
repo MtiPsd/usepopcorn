@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import StarRating from './StarRating';
 import { useMovies } from './useMovies';
 import { useLocalStorageState } from './useLocalStorageState';
+import { useKey } from './useKey';
 
 function average(arr) {
   return arr.reduce((acc, cur, i, arr) => {
@@ -132,18 +133,7 @@ function MovieDetails({
     }
   }, [userRating]);
 
-  useEffect(() => {
-    function callback(e) {
-      if (e.code === 'Escape') {
-        onCloseMovie();
-      }
-    }
-    document.addEventListener('keydown', callback);
-
-    return () => {
-      document.removeEventListener('keydown', callback);
-    };
-  }, [onCloseMovie]);
+  useKey('Escape', onCloseMovie);
 
   useEffect(() => {
     async function getMovieDetails() {
@@ -293,24 +283,13 @@ function Search({ query, setQuery }) {
   // the default value is usually null
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    function callback(e) {
-      //
-      if (document.activeElement === inputRef.current) {
-        return;
-      }
-
-      if (e.code === 'Enter') {
-        inputRef.current.focus();
-        setQuery('');
-      }
+  useKey('Enter', () => {
+    if (document.activeElement === inputRef.current) {
+      return;
     }
-    document.addEventListener('keydown', callback);
-
-    return () => {
-      document.removeEventListener('keydown', callback);
-    };
-  }, [setQuery]);
+    inputRef.current.focus();
+    setQuery('');
+  });
 
   return (
     <input
