@@ -1,28 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import StarRating from './StarRating';
-
-const tempWatchedData = [
-  {
-    imdbID: 'tt1375666',
-    Title: 'Inception',
-    Year: '2010',
-    Poster:
-      'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg',
-    runtime: 148,
-    imdbRating: 8.8,
-    userRating: 10,
-  },
-  {
-    imdbID: 'tt0088763',
-    Title: 'Back to the Future',
-    Year: '1985',
-    Poster:
-      'https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg',
-    runtime: 116,
-    imdbRating: 8.5,
-    userRating: 9,
-  },
-];
 
 function average(arr) {
   return arr.reduce((acc, cur, i, arr) => {
@@ -174,13 +151,14 @@ function MovieDetails({
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState(null);
 
+  const countRef = useRef(0);
+
   const isWatched = watched.some(
     movie => movie.imdbID === selectedId,
   );
   const watchedUserRating = watched.find(
     movie => movie.imdbID === selectedId,
   )?.userRating;
-
   const {
     Title: title,
     Year: year,
@@ -202,6 +180,14 @@ function MovieDetails({
   // if (imdbRating > 8) {
   //   return <p>Such good movie</p>;
   // }
+
+  // * Whenever the [userRating] value changes
+  // * we want to do something
+  useEffect(() => {
+    if (userRating) {
+      countRef.current += 1;
+    }
+  }, [userRating]);
 
   useEffect(() => {
     function callback(e) {
@@ -241,7 +227,10 @@ function MovieDetails({
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(' ')[0]),
       userRating,
+      countRatingDecisions: countRef.current,
     };
+
+    console.table(newWatchedMovie);
 
     onAddWatched(newWatchedMovie);
     onCloseMovie();
@@ -357,8 +346,32 @@ function Logo() {
 }
 
 function Search({ query, setQuery }) {
+  // in you are referring to a DOM element
+  // the default value is usually null
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    function callback(e) {
+      //
+      if (document.activeElement === inputRef.current) {
+        return;
+      }
+
+      if (e.code === 'Enter') {
+        inputRef.current.focus();
+        setQuery('');
+      }
+    }
+    document.addEventListener('keydown', callback);
+
+    return () => {
+      document.removeEventListener('keydown', callback);
+    };
+  }, [setQuery]);
+
   return (
     <input
+      ref={inputRef}
       className='search'
       type='text'
       placeholder='Search movies...'
